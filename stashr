@@ -1,0 +1,64 @@
+#!/bin/bash
+
+declare -a HAPPY_STRINGS=(
+    "Have a wonderful day!"
+    "Keep up the great work!"
+    "Go get 'em tiger!"
+    "Thanks for playing!"
+    "Follow your dreams!"
+)
+
+get_stash_list () {
+    echo $(git --no-pager stash list | cut -d':' -f1)
+}
+
+bounce () {
+    n=$((RANDOM % ${#HAPPY_STRINGS[@]}))
+    printf "${HAPPY_STRINGS[n]}\n"
+}
+
+stash_list=$(get_stash_list)
+
+if [[ $stash_list == "" ]]; then
+    echo "Nothing to do here, stash is empty!"
+    bounce
+fi
+
+for s in $stash_list; do
+    printf "Inspecting stash $s\n"
+    git stash show -p $s
+
+    got_valid_input=0
+    while [[ $got_valid_input -eq 0 ]]; do
+        printf "(P)op, (D)rop, (A)pply, (S)kip, (Q)uit?: "
+        read -n 1 choice
+        printf "\n"
+
+        case $choice in
+            [Pp])
+                printf "Popping $s\n\n"
+                git stash pop $s
+                got_valid_input=1
+                ;;
+            [Dd])
+                printf "Dropping $s\n\n"
+                git stash drop $s
+                got_valid_input=1
+                ;;
+            [Aa])
+                printf "Applying $s\n\n"
+                git stash apply $s
+                got_valid_input=1
+                ;;
+            [Ss])
+                printf "Skipping $s\n\n"
+                got_valid_input=1
+                ;;
+            [Ll])
+                printf "You can pop and drop it but you can't lock it, sorry\n\n"
+                ;;
+            [Qq])
+                bounce
+        esac
+    done
+done
