@@ -15,6 +15,7 @@ get_stash_list () {
 bounce () {
     n=$((RANDOM % ${#HAPPY_STRINGS[@]}))
     printf "${HAPPY_STRINGS[n]}\n"
+    exit 0
 }
 
 stash_list=$(get_stash_list)
