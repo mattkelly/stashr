@@ -25,35 +25,44 @@ if [[ $stash_list == "" ]]; then
     bounce
 fi
 
-for s in $stash_list; do
-    printf "Inspecting stash $s\n"
-    git stash show -p $s
+curr_stash=0
+num_stashes=$(wc -w <<< $stash_list)
+while [[ $curr_stash -lt $num_stashes ]]; do
+    printf "Stash $curr_stash:\n"
+    git stash show $curr_stash
 
-    got_valid_input=0
-    while [[ $got_valid_input -eq 0 ]]; do
-        printf "(P)op, (D)rop, (A)pply, (S)kip, (Q)uit?: "
+    go_next=0
+    while [[ $go_next -eq 0 ]]; do
+        printf "(I)nspect (P)op, (D)rop, (A)pply, (S)kip, (Q)uit?: "
         read -n 1 choice
         printf "\n"
 
         case $choice in
+            [Ii])
+                git stash show -p $s
+                ;;
             [Pp])
                 printf "Popping $s\n\n"
                 git stash pop $s
-                got_valid_input=1
+                num_stashes=$((num_stashes-1))
+                go_next=1
                 ;;
             [Dd])
                 printf "Dropping $s\n\n"
                 git stash drop $s
-                got_valid_input=1
+                num_stashes=$((num_stashes-1))
+                go_next=1
                 ;;
             [Aa])
                 printf "Applying $s\n\n"
                 git stash apply $s
-                got_valid_input=1
+                curr_stash=$((curr_stash+1))
+                go_next=1
                 ;;
             [Ss])
                 printf "Skipping $s\n\n"
-                got_valid_input=1
+                curr_stash=$((curr_stash+1))
+                go_next=1
                 ;;
             [Ll])
                 printf "You can pop and drop it but you can't lock it, sorry\n\n"
